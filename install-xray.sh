@@ -33,7 +33,7 @@ cat >/usr/local/etc/xray/config.json <<EOF
       "streamSettings": {
         "network": "xhttp",
         "xhttpSettings": {
-          "path": "/api/v1/updates",
+          "path": "/content/downloads/33/54/041-2011/pRtCDYcWShMLxFggy3TzFzmfnnWQNFQBfJ/BootCampESD.pkg",
           "mode": "stream-one"
         },
         "security": "reality",
