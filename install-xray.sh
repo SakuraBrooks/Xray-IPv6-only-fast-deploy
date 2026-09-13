@@ -60,8 +60,6 @@ cat >/usr/local/etc/xray/config.json <<EOF
 }
 EOF
 
-chmod 600 /usr/local/etc/xray/config.json
-
 TEST_OUT=$(xray run -test -c /usr/local/etc/xray/config.json 2>&1) || true
 echo "$TEST_OUT"
 if ! grep -q "Configuration OK" <<<"$TEST_OUT"; then
