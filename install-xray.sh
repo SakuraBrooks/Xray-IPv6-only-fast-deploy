@@ -83,7 +83,7 @@ else
   HOST="${IP}"
 fi
 
-LINK="vless://${UUID}@${HOST}:443?encryption=none&security=reality&sni=swcdn.apple.com&fp=firefox&pbk=${PUBLIC_KEY}&sid=${SHORT_ID}&type=xhttp&path=%2Fapi%2Fv1%2Fupdates&mode=stream-one#${NODE_NAME}"
+LINK="vless://${UUID}@${HOST}:443?encryption=none&security=reality&sni=swcdn.apple.com&fp=firefox&pbk=${PUBLIC_KEY}&sid=${SHORT_ID}&type=xhttp&path=%2Fcontent%2Fdownloads%2F33%2F54%2F041-2011%2FpRtCDYcWShMLxFggy3TzFzmfnnWQNFQBfJ%2FBootCampESD.pkg&mode=stream-one#${NODE_NAME}"
 
 clear
 echo "$TEST_OUT"
