@@ -1,9 +1,13 @@
 #!/usr/bin/env bash
+
 set -euo pipefail
 
-need_cmd() { command -v "$1" >/dev/null 2>&1; }
+need_cmd() { command -v "$1"; }
 
-curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh | bash -s @ install
+trap 'exit 1' ERR
+
+INSTALL_SH=$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)
+bash -c "$INSTALL_SH" @ install
 
 UUID=$(xray uuid)
 KEYS=$(xray x25519)
@@ -65,7 +69,11 @@ cat >/usr/local/etc/xray/config.json <<EOF
 }
 EOF
 
-xray run -test -c /usr/local/etc/xray/config.json
+TEST_OUT=$(xray run -test -c /usr/local/etc/xray/config.json 2>&1) || true
+echo "$TEST_OUT"
+if ! grep -q "Configuration OK" <<<"$TEST_OUT"; then
+  exit 1
+fi
 
 if need_cmd systemctl; then
   systemctl enable xray
@@ -75,7 +83,6 @@ elif need_cmd rc-service; then
 elif need_cmd service; then
   service xray restart
 else
-  echo "No supported service manager found" >&2
   exit 1
 fi
 
@@ -92,7 +99,6 @@ fi
 
 IP=$(curl -6 --max-time 6 ip.sb || curl -6 --max-time 6 ifconfig.co)
 NODE_NAME="$(hostname)-$(date +%m%d)"
-NODE_NAME="${NODE_NAME^}"
 
 if [[ "$IP" == *:* ]]; then
   HOST="[${IP}]"
