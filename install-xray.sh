@@ -1,42 +1,15 @@
 #!/usr/bin/env bash
-# ============================================================
-# WARNING: This script is intended for IPv6-only VPS.
-# It listens on IPv6 (::) and uses IPv6 for all connectivity.
-# Before running, make sure you have installed fscarmen's
-# WARP script to provide IPv4 outbound if your VPS needs to
-# reach IPv4-only resources. Otherwise, some destinations may
-# be unreachable.
-#
-# fscarmen's WARP script (latest, GitLab):
-#   wget -N https://gitlab.com/fscarmen/warp/-/raw/main/menu.sh && bash menu.sh
-#
-# The old GitHub repository (fscarmen/warp-sh) has been moved
-# to GitLab. See: https://gitlab.com/fscarmen/warp
-# ============================================================
-
 set -euo pipefail
 
 need_cmd() { command -v "$1" >/dev/null 2>&1; }
 
-log() {
-  local level="$1"; shift
-  local ts
-  ts=$(date +"%b %d %H:%M:%S.%3N" 2>/dev/null || date +"%b %d %H:%M:%S")
-  printf "%s [%s] %s\n" "$ts" "$level" "$*" >&2
-}
-
-trap 'log "error" "Fail"; exit 1' ERR
-
-# Install Xray quietly
-INSTALL_SH=$(curl -sL https://github.com/XTLS/Xray-install/raw/main/install-release.sh)
-bash -c "$INSTALL_SH" @ install >/dev/null 2>&1
+curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh | bash -s @ install
 
 UUID=$(xray uuid)
 KEYS=$(xray x25519)
 PRIVATE_KEY=$(echo "$KEYS" | grep -i private | awk '{print $NF}')
 PUBLIC_KEY=$(echo "$KEYS" | grep -i public | awk '{print $NF}')
 
-# Generate short ID
 if need_cmd openssl; then
   SHORT_ID=$(openssl rand -hex 4)
 else
@@ -92,40 +65,34 @@ cat >/usr/local/etc/xray/config.json <<EOF
 }
 EOF
 
-# Test config quietly
-TEST_OUT=$(xray run -test -c /usr/local/etc/xray/config.json 2>&1) || true
-if ! grep -q "Configuration OK" <<<"$TEST_OUT"; then
-  log "error" "Fail"
-  exit 1
-fi
+xray run -test -c /usr/local/etc/xray/config.json
 
-# Start service quietly
 if need_cmd systemctl; then
-  systemctl enable xray >/dev/null 2>&1
-  systemctl restart xray >/dev/null 2>&1
+  systemctl enable xray
+  systemctl restart xray
 elif need_cmd rc-service; then
-  rc-service xray restart >/dev/null 2>&1
+  rc-service xray restart
 elif need_cmd service; then
-  service xray restart >/dev/null 2>&1
+  service xray restart
 else
-  log "error" "No supported service manager found"
+  echo "No supported service manager found" >&2
   exit 1
 fi
 
-# Open port quietly
 if need_cmd ufw; then
-  ufw allow 443/tcp >/dev/null 2>&1
+  ufw allow 443/tcp
 elif need_cmd firewall-cmd; then
-  firewall-cmd --permanent --add-port=443/tcp >/dev/null 2>&1
-  firewall-cmd --reload >/dev/null 2>&1
+  firewall-cmd --permanent --add-port=443/tcp
+  firewall-cmd --reload
 elif need_cmd iptables; then
-  iptables -I INPUT -p tcp --dport 443 -j ACCEPT >/dev/null 2>&1
+  iptables -I INPUT -p tcp --dport 443 -j ACCEPT
 else
-  log "warn" "No supported firewall tool found; make sure 443/tcp is open."
+  echo "No supported firewall tool found; make sure 443/tcp is open." >&2
 fi
 
-IP=$(curl -s6 --max-time 6 ip.sb || curl -s6 --max-time 6 ifconfig.co)
+IP=$(curl -6 --max-time 6 ip.sb || curl -6 --max-time 6 ifconfig.co)
 NODE_NAME="$(hostname)-$(date +%m%d)"
+NODE_NAME="${NODE_NAME^}"
 
 if [[ "$IP" == *:* ]]; then
   HOST="[${IP}]"
