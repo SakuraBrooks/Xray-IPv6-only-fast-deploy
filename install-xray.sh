@@ -2,12 +2,11 @@
 
 set -euo pipefail
 
-need_cmd() { command -v "$1"; }
+need_cmd() { command -v "$1" >/dev/null 2>&1; }
 
 trap 'exit 1' ERR
 
-INSTALL_SH=$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)
-bash -c "$INSTALL_SH" @ install
+curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh | bash -s @ install
 
 UUID=$(xray uuid)
 KEYS=$(xray x25519)
@@ -69,11 +68,7 @@ cat >/usr/local/etc/xray/config.json <<EOF
 }
 EOF
 
-TEST_OUT=$(xray run -test -c /usr/local/etc/xray/config.json 2>&1) || true
-echo "$TEST_OUT"
-if ! grep -q "Configuration OK" <<<"$TEST_OUT"; then
-  exit 1
-fi
+xray run -test -c /usr/local/etc/xray/config.json
 
 if need_cmd systemctl; then
   systemctl enable xray
@@ -94,7 +89,7 @@ elif need_cmd firewall-cmd; then
 elif need_cmd iptables; then
   iptables -I INPUT -p tcp --dport 443 -j ACCEPT
 else
-  echo "No supported firewall tool found; make sure 443/tcp is open." >&2
+  exit 1
 fi
 
 IP=$(curl -6 --max-time 6 ip.sb || curl -6 --max-time 6 ifconfig.co)
