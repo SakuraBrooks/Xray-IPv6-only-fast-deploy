@@ -56,7 +56,17 @@ cat >/usr/local/etc/xray/config.json <<EOF
           "serverNames": ["swcdn.apple.com"],
           "privateKey": "${PRIVATE_KEY}",
           "shortIds": ["${SHORT_ID}"],
-          "show": false
+          "show": false,
+          "limitFallbackUpload": {
+            "afterBytes": 4096,
+            "bytesPerSec": 512,
+            "burstBytesPerSec": 1024
+          },
+          "limitFallbackDownload": {
+            "afterBytes": 8192,
+            "bytesPerSec": 512,
+            "burstBytesPerSec": 1024
+          }
         },
         "sockopt": {
           "v6only": true
