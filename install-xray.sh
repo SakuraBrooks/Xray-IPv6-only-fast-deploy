@@ -6,7 +6,7 @@ need_cmd() { command -v "$1" >/dev/null 2>&1; }
 
 trap 'exit 1' ERR
 
-curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh | bash -s @ install
+bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install
 
 UUID=$(xray uuid)
 KEYS=$(xray x25519)
