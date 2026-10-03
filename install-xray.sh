@@ -24,6 +24,12 @@ mkdir -p /usr/local/etc/xray
 cat >/usr/local/etc/xray/config.json <<EOF
 {
   "log": { "loglevel": "none" },
+  "dns": {
+    "servers": [
+      "2001:4860:4860::8888",
+      "2001:4860:4860::8844"
+    ]
+  },
   "policy": {
     "levels": {
       "0": { "connIdle": 300 }
