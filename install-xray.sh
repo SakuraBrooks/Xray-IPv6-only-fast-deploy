@@ -79,8 +79,27 @@ cat >/usr/local/etc/xray/config.json <<EOF
       "tag": "direct",
       "protocol": "freedom",
       "settings": { "domainStrategy": "UseIPv6v4" }
+    },
+    {
+      "tag": "block",
+      "protocol": "blackhole",
+      "settings": {}
     }
-  ]
+  ],
+  "routing": {
+    "domainStrategy": "AsIs",
+    "rules": [
+      {
+        "type": "field",
+        "domain": [
+          "domain:com.cn",
+          "domain:csdn.net",
+          "domain:csdn.com"
+        ],
+        "outboundTag": "block"
+      }
+    ]
+  }
 }
 EOF
 
